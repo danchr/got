@@ -39,6 +39,10 @@
 #include "got_lib_object_parse.h"
 #include "got_lib_privsep.h"
 
+#ifdef __APPLE__
+#include "openbsd-compat.h"
+#endif
+
 static volatile sig_atomic_t sigint_received;
 
 static void

@@ -8,7 +8,7 @@ CFLAGS += ${CPPFLAGS} -I${OPENBSD_COMPAT}
 CFLAGS += -Wno-pointer-sign
 
 LDFLAGS += -L${OPENBSD_COMPAT}
-LDADD += -lopenbsd-compat -lmd
+LDADD += -lopenbsd-compat
 
 .if "${GOT_RELEASE}" == "Yes"
 PREFIX ?= /usr/local
@@ -16,7 +16,7 @@ BINDIR ?= ${PREFIX}/bin
 LIBEXECDIR ?= ${PREFIX}/libexec
 MANDIR ?= ${PREFIX}/man/man
 .else
-CFLAGS += -Werror -Wall -Wstrict-prototypes -Wunused-variable
+CFLAGS += -Wall -Wstrict-prototypes -Wunused-variable
 PREFIX ?= ${HOME}
 BINDIR ?= ${PREFIX}/bin
 LIBEXECDIR ?= ${BINDIR}

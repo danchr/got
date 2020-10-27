@@ -31,6 +31,11 @@ __FBSDID("$FreeBSD: head/devel/got/files/openbsd-compat/getdtablecount.c 548853 
 #include <sys/sysctl.h>
 #include <stddef.h>
 
+#ifdef __APPLE__
+#include <unistd.h>
+#include <libproc.h>
+#endif
+
 int getdtablecount(void);
 
 /* 
@@ -40,6 +45,10 @@ int getdtablecount(void);
 int
 getdtablecount(void)
 {
+#ifdef __APPLE__
+	int sz = proc_pidinfo(getpid(), PROC_PIDLISTFDS, 0, 0, 0);
+	return sz / sizeof(struct proc_fdinfo);
+#else
 	int mib[4];
 	int error;
 	int nfds;
@@ -55,4 +64,5 @@ getdtablecount(void)
 	if (error)
 		return (-1);
 	return (nfds);
+#endif
 }

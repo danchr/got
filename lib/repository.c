@@ -38,7 +38,11 @@
 #include <libgen.h>
 #include <stdint.h>
 #include <imsg.h>
+#ifndef __APPLE__
 #include <uuid.h>
+#endif
+
+#include "openbsd-compat.h"
 
 #include "got_error.h"
 #include "got_reference.h"

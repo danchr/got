@@ -23,7 +23,11 @@
 #include <string.h>
 #include <sha1.h>
 #include <zlib.h>
+#ifdef __APPLE__
+#include <uuid/uuid.h>
+#else
 #include <uuid.h>
+#endif
 
 #include "got_error.h"
 #include "got_object.h"

@@ -16,7 +16,11 @@
 
 #include <sys/stat.h>
 #include <sys/queue.h>
+#ifdef __APPLE__
+#include "sys-tree.h"
+#else
 #include <sys/tree.h>
+#endif
 
 #include <dirent.h>
 #include <limits.h>
@@ -32,8 +36,12 @@
 #include <zlib.h>
 #include <fnmatch.h>
 #include <libgen.h>
+#ifndef __APPLE__
 #include <uuid.h>
+#endif
 #include <util.h>
+
+#include "openbsd-compat.h"
 
 #include "got_error.h"
 #include "got_repository.h"
@@ -208,7 +216,9 @@ got_worktree_init(const char *path, struct got_reference *head_ref,
 	const struct got_error *err = NULL;
 	struct got_object_id *commit_id = NULL;
 	uuid_t uuid;
+#ifndef __APPLE__
 	uint32_t uuid_status;
+#endif
 	int obj_type;
 	char *path_got = NULL;
 	char *formatstr = NULL;
@@ -287,6 +297,10 @@ got_worktree_init(const char *path, struct got_reference *head_ref,
 		goto done;
 
 	/* Generate UUID. */
+#ifdef __APPLE__
+	uuid_generate(uuid);
+	uuid_unparse(uuid, uuidstr);
+#else
 	uuid_create(&uuid, &uuid_status);
 	if (uuid_status != uuid_s_ok) {
 		err = got_error_uuid(uuid_status, "uuid_create");
@@ -297,6 +311,7 @@ got_worktree_init(const char *path, struct got_reference *head_ref,
 		err = got_error_uuid(uuid_status, "uuid_to_string");
 		goto done;
 	}
+#endif
 	err = create_meta_file(path_got, GOT_WORKTREE_UUID, uuidstr);
 	if (err)
 		goto done;
@@ -400,11 +415,19 @@ open_worktree(struct got_worktree **worktree, const char *path)
 	err = read_meta_file(&uuidstr, path_got, GOT_WORKTREE_UUID);
 	if (err)
 		goto done;
+#ifdef __APPLE__
+	uuid_status = uuid_parse(uuidstr, (*worktree)->uuid);
+	if (uuid_status != uuid_s_ok) {
+		err = got_error(GOT_ERR_UUID_INVALID);
+		goto done;
+	}
+#else
 	uuid_from_string(uuidstr, &(*worktree)->uuid, &uuid_status);
 	if (uuid_status != uuid_s_ok) {
 		err = got_error_uuid(uuid_status, "uuid_from_string");
 		goto done;
 	}
+#endif
 
 	err = got_repo_open(&repo, (*worktree)->repo_path, NULL);
 	if (err)
@@ -1618,10 +1641,17 @@ xbit_differs(struct got_fileindex_entry *ie, uint16_t st_mode)
 static int
 stat_info_differs(struct got_fileindex_entry *ie, struct stat *sb)
 {
+#ifdef __APPLE__
+	return !(ie->ctime_sec == sb->st_ctimespec.tv_sec &&
+	    ie->ctime_nsec == sb->st_ctimespec.tv_nsec &&
+	    ie->mtime_sec == sb->st_mtimespec.tv_sec &&
+	    ie->mtime_nsec == sb->st_mtimespec.tv_nsec &&
+#else
 	return !(ie->ctime_sec == sb->st_ctim.tv_sec &&
 	    ie->ctime_nsec == sb->st_ctim.tv_nsec &&
 	    ie->mtime_sec == sb->st_mtim.tv_sec &&
 	    ie->mtime_nsec == sb->st_mtim.tv_nsec &&
+#endif
 	    ie->size == (sb->st_size & 0xffffffff) &&
 	    !xbit_differs(ie, sb->st_mode));
 }
@@ -2202,12 +2232,19 @@ const struct got_error *
 got_worktree_get_uuid(char **uuidstr, struct got_worktree *worktree)
 {
 	uint32_t uuid_status;
-
+#ifdef __APPLE__
+    uuid_status = uuid_parse(*uuidstr, worktree->uuid);
+	if (uuid_status) {
+		*uuidstr = NULL;
+		return got_error(GOT_ERR_UUID_INVALID);
+	}
+#else
 	uuid_to_string(&worktree->uuid, uuidstr, &uuid_status);
 	if (uuid_status != uuid_s_ok) {
 		*uuidstr = NULL;
 		return got_error_uuid(uuid_status, "uuid_to_string");
 	}
+#endif
 
 	return NULL;
 }

@@ -15,7 +15,11 @@
  */
 
 #include <sys/queue.h>
+#ifdef __APPLE__
+#include "sys-tree.h"
+#else
 #include <sys/tree.h>
+#endif
 #include <sys/stat.h>
 
 #include <errno.h>
@@ -28,7 +32,9 @@
 #include <endian.h>
 #include <limits.h>
 #include <unistd.h>
+#ifndef __APPLE__
 #include <uuid.h>
+#endif
 
 #include "got_error.h"
 #include "got_object.h"
@@ -105,10 +111,17 @@ got_fileindex_entry_update(struct got_fileindex_entry *ie,
 
 	if ((ie->flags & GOT_FILEIDX_F_NO_FILE_ON_DISK) == 0) {
 		if (update_timestamps) {
+#ifdef __APPLE__
+			ie->ctime_sec = sb.st_ctimespec.tv_sec;
+			ie->ctime_nsec = sb.st_ctimespec.tv_nsec;
+			ie->mtime_sec = sb.st_mtimespec.tv_sec;
+			ie->mtime_nsec = sb.st_mtimespec.tv_nsec;
+#else
 			ie->ctime_sec = sb.st_ctim.tv_sec;
 			ie->ctime_nsec = sb.st_ctim.tv_nsec;
 			ie->mtime_sec = sb.st_mtim.tv_sec;
 			ie->mtime_nsec = sb.st_mtim.tv_nsec;
+#endif
 		}
 		ie->uid = sb.st_uid;
 		ie->gid = sb.st_gid;

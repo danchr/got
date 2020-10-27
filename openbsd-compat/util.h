@@ -1,6 +1,7 @@
 #ifndef _OPENBSD_COMPAT_UTIL_H_
 #define _OPENBSD_COMPAT_UTIL_H_
 
+#ifndef __APPLE__
 #include <libutil.h>
 
 /*
@@ -16,4 +17,10 @@
 	r == -1 ? -1 : 0;						\
 })
 
+#else
+#include_next <util.h>
+
+#define FMT_SCALED_STRSIZE      7
+int     fmt_scaled(long long number, char *result);
+#endif
 #endif

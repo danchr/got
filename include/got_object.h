@@ -14,6 +14,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#ifdef __APPLE__
+#include "openbsd-compat.h"
+#endif
+
 struct got_object_id;
 
 struct got_blob_object;

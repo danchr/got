@@ -17,7 +17,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/queue.h>
+#ifndef __APPLE__
 #include <sys/stdint.h>
+#endif
 
 #include <limits.h>
 #include <stdio.h>

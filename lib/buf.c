@@ -37,6 +37,8 @@
 
 #include "buf.h"
 
+#include "openbsd-compat.h"
+
 #include "got_error.h"
 
 #define BUF_INCR	128

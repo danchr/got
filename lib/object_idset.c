@@ -15,7 +15,11 @@
  */
 
 #include <sys/queue.h>
+#ifdef __APPLE__
+#include "sys-tree.h"
+#else
 #include <sys/tree.h>
+#endif
 
 #include <stdlib.h>
 #include <string.h>

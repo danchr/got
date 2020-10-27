@@ -39,6 +39,10 @@
 #include "got_error.h"
 #include "gotconfig.h"
 
+#ifdef __APPLE__
+#include "openbsd-compat.h"
+#endif
+
 static struct file {
 	FILE			*stream;
 	const char		*name;
